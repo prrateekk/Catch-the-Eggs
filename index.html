@@ -1,0 +1,136 @@
+<html>
+<head>
+</head>
+<style>
+canvas{
+	border:2px solid black;
+	background-color:#ccff66;
+}
+</style>
+<body>
+<center>
+<h1>Game Title</h1>
+<canvas width = '500px' height='500px' id = 'mycanvas'></canvas></center>
+
+<script>
+var canvas = document.getElementById('mycanvas');
+var ctx = canvas.getContext("2d");
+var r = canvas.width/40;
+var bas_r = 3*r;
+var third = (canvas.height-bas_r)/3;
+
+var x = [getRandomInt(r,canvas.width-r),getRandomInt(r,canvas.width-r),getRandomInt(r,canvas.width-r)];
+var y = [ -1*r,  -1*(r+third), -1*(r+2*third)];
+var down = 0;
+
+var ball_speed = 1.5;
+var balls = 3;
+var bas_x = canvas.width/2;
+var bas_y = canvas.height-bas_r;
+
+var bas_speed = 5;
+var isps = false;
+var l_pressed = false,r_pressed = false;
+var score = 0,mx_score=0;
+var lives = balls;
+var lost = false;
+
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function reset(){
+	score = 0;
+	lives = balls;
+	lost = false;
+	x = [getRandomInt(r,canvas.width-r),getRandomInt(r,canvas.width-r),getRandomInt(r,canvas.width-r)];
+	y = [ -1*r,  -1*(r+third), -1*(r+2*third)];
+	down = 0;
+	ball_speed = 1.5;
+	balls = 3;
+	bas_x = canvas.width/2;
+	bas_y = canvas.height-bas_r;
+	isps = false;
+	l_pressed = false;
+	r_pressed = false;
+}
+
+function max(a,b){
+	return a>b?a:b;
+}
+
+function draw(){
+	if (isps==true||lost==true) return 0;
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+
+	if (x[down]>=bas_x-bas_r && x[down]<=bas_x+bas_r && y[down]<=bas_y && y[down]+r>=bas_y){
+		score+=1;
+		if (ball_speed<2.6) ball_speed=(score/10)*0.1+1.5;
+		mx_score = max(mx_score,score);
+		x[down] = getRandomInt(r,canvas.width-r);
+		y[down] = -r;
+		down = (down+1)%balls;
+	}
+
+	if (y[down]>=(canvas.height)){
+		lives-=1;
+		if (lives==0) lost=true;
+		x[down] = getRandomInt(r,canvas.width-r);
+		y[down] = -r;
+		down = (down+1)%balls;
+	}
+
+	ctx.beginPath();
+	ctx.font = '15px courier';
+	ctx.fillStyle = 'black';
+	ctx.fillText("SCORE:"+score,410,20);
+	ctx.fillText("BEST:"+mx_score,410,40);
+	ctx.closePath();
+
+	for (var i=0;i<balls;i+=1){
+		ctx.beginPath();
+		ctx.arc(x[i],y[i],r,0,2*Math.PI,false);
+		ctx.fillStyle = '#00cccc';
+		y[i]+=ball_speed;
+		ctx.fill();
+		ctx.closePath();
+	}
+	if (r_pressed==true && (bas_x+bas_r+bas_speed)<=canvas.width) bas_x+=bas_speed;
+	if (l_pressed==true && (bas_x-bas_r-bas_speed>=0)) bas_x-=bas_speed;
+	ctx.beginPath();
+	ctx.arc(bas_x,bas_y,bas_r,0,Math.PI,false);
+	ctx.fillStyle = '#339933';
+	ctx.fill();
+	ctx.closePath();
+
+}
+
+function keyDownHandler(key){
+	<!--39 IS RIGHT-KEY-->
+	if (key.keyCode==39) r_pressed = true;
+	<!--37 IS LEFT-KEY-->
+	else if (key.keyCode==37) l_pressed = true;
+}
+
+function keyUpHandler(key){
+	if (key.keyCode==39) r_pressed = false;
+	else if (key.keyCode==37) l_pressed = false;
+	<!--32 IS SPACEBAR-->
+	else if (key.keyCode==32){
+		if (isps==false) isps=true;
+		else if (isps==true) isps=false;
+	}
+	<!--13 IS ENTER KEY-->
+	else if (key.keyCode==13){
+		reset();
+	}
+}
+document.addEventListener("keydown",keyDownHandler,false);
+document.addEventListener("keyup",keyUpHandler,false);
+setInterval(draw,10);
+
+</script>
+
+</body>
+</html>
